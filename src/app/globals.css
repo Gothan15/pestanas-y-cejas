@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+:root {
+  /* Morado real con dorado: la identidad de Pestañas & Cejas,
+     la misma gama de su lista de precios (morado/lila). */
+  --papel: #faf6ff;
+  --crema: #efe6fa;
+  --tinta: #2e0a4e;
+  --acento: #8a1c7c;
+  --dorado: #b9862f;
+  --linea: #dccdf0;
+}
+
+@theme inline {
+  --color-papel: var(--papel);
+  --color-crema: var(--crema);
+  --color-tinta: var(--tinta);
+  --color-acento: var(--acento);
+  --color-dorado: var(--dorado);
+  --color-linea: var(--linea);
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+::selection {
+  background: var(--acento);
+  color: var(--papel);
+}
+
+/* Grano de papel: textura sutil para que el fondo no sea un color
+   plano de plantilla */
+.grano {
+  background-image: radial-gradient(rgba(33, 24, 18, 0.055) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* Marquesina: la cinta se desplaza en bucle (se duplica el contenido) */
+@keyframes cinta {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.anim-cinta {
+  animation: cinta 26s linear infinite;
+}
+
+/* Entrada editorial: las secciones aparecen al llegar a ellas
+   (la clase .visible la añade el componente Reveal) */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Entrada del hero al cargar */
+@keyframes entra {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.anim-entra {
+  animation: entra 0.8s ease both;
+}
+.anim-entra-1 {
+  animation: entra 0.8s ease 0.12s both;
+}
+.anim-entra-2 {
+  animation: entra 0.8s ease 0.24s both;
+}
+
+/* Galería: tira horizontal con snap, sin barra visible */
+.tira {
+  scrollbar-width: none;
+}
+.tira::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-cinta,
+  .anim-entra,
+  .anim-entra-1,
+  .anim-entra-2 {
+    animation: none;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}

@@ -1,0 +1,7 @@
+Fotos de AMBIENTE generadas para esta plantilla (tonos cálidos,
+estilo editorial de revista). No son trabajos de ningún negocio ni
+clientas reales: se usan solo como ilustración del tipo de servicio.
+Los trabajos reales van SOLO en la galería (public/fotos/).
+Se sustituyen por fotos reales del local cuando existan, sin tocar
+código: mismo nombre de archivo o cambiar la ruta en
+src/config/negocio.ts.

@@ -1,0 +1,3 @@
+Fotos reales del negocio van aqui.
+Nombres sugeridos: portada.jpg, 1.jpg, 2.jpg, 3.jpg, 4.jpg
+Despues se enlazan en src/config/negocio.ts
