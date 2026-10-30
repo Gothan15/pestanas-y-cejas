@@ -56,21 +56,68 @@ igual, con la tasa de respaldo.
 ## Cómo funciona la reserva
 
 1. La clienta toca «Reservar» en un servicio.
-2. El formulario ya trae ese servicio elegido; pone nombre, día y hora.
-3. Se abre WhatsApp (63 28 72 39) con el mensaje armado y el
+2. El formulario ya trae ese servicio elegido; pone nombre, elige
+   día y toca una hora de la rejilla de turnos.
+3. Los turnos ya ocupados salen oscuros y no se pueden tocar
+   (ver la sección del panel, abajo).
+4. Se abre WhatsApp (63 28 72 39) con el mensaje armado y el
    negocio confirma el turno en el chat.
+
+## Horarios ocupados y el panel de la dueña
+
+Esto lo pidió la dueña y es la «versión ligera» a propósito: la
+reserva sigue siendo por WhatsApp (así trabaja ella), pero la
+página dejó de ser ciega. Antes cualquiera podía pedir un día y
+una hora que ya estaban cogidos, porque la web no guardaba nada.
+
+Ahora hay una base de datos mínima con **solo los horarios
+ocupados** (fecha + hora + una nota opcional; ningún dato de
+clientas vive aquí):
+
+- **`GET /api/disponibilidad`** (público): devuelve los fecha/hora
+  ocupados de un rango. El formulario pinta esos turnos oscuros,
+  tachados y sin poder elegirse; si ese día no se trabaja, lo
+  avisa y no muestra rejilla. Si la consulta falla, se ofrecen
+  todos los turnos y la clienta confirma el suyo por WhatsApp,
+  como antes: la página nunca se rompe por esto.
+- **`/panel`** (privado): la dueña entra con su clave, elige el
+  día y toca las horas para ocuparlas o liberarlas, con una nota
+  opcional (por ejemplo el nombre de la clienta, para acordarse).
+  Abajo ve la lista de próximos horarios ocupados y puede
+  quitarlos. Está pensado para el móvil y sin tecnicismos.
+
+Variables que necesita (ver `.env.example`):
+
+- `DATABASE_URL`: el PostgreSQL donde vive la tabla de bloqueos.
+- `PANEL_CLAVE`: la clave con la que entra la dueña. La sesión va
+  en una cookie firmada (jose) que dura 7 días; si se cambia la
+  clave, las sesiones abiertas dejan de valer.
+
+**El horario es provisional.** Los días y horas que se ofrecen
+salen de `negocio.agenda` en `src/config/negocio.ts` (hoy: lunes
+a sábado, 09:00–18:00, turnos de 1 hora) y son un punto de
+partida: la dueña aún no pasa su horario real, y cuando lo haga
+se cambia solo ahí, sin tocar más código.
+
+**Al desplegar** hace falta un PostgreSQL: vale uno gratis de
+[Neon](https://neon.tech). Se pone su cadena en `DATABASE_URL`
+(en Vercel, como variable de entorno) y se crea la tabla una vez
+con `npx prisma db push` (o `migrate` si algún día hace falta
+historial de cambios). Sin base de datos, el resto de la página
+funciona igual; solo la disponibilidad no se puede comprobar.
 
 ## Correrla
 
 ```bash
 npm install
-cp .env.example .env.local   # y pon tu ELTOQUE_API_TOKEN
+cp .env.example .env.local   # pon ELTOQUE_API_TOKEN, DATABASE_URL y PANEL_CLAVE
+npx prisma db push           # crea la tabla de horarios ocupados
 npm run dev                  # http://localhost:3000
 npm run build
 ```
 
-Stack: Next.js 16 + TypeScript + Tailwind CSS 4. Sin base de
-datos: es una página, no un sistema.
+Stack: Next.js 16 + TypeScript + Tailwind CSS 4 + Prisma 6 /
+PostgreSQL (solo para los horarios ocupados del panel).
 
 ## Fotos
 
@@ -81,7 +128,7 @@ datos: es una página, no un sistema.
 
 ## Lo que falta
 
-- [ ] Zona/municipio y horario exactos (en el config salen «por confirmar»)
+- [ ] Zona/municipio y horario exactos (en el config salen «por confirmar»; la agenda usa un horario provisional en `negocio.agenda` hasta que la dueña pase el suyo)
 - [ ] Duración de cada servicio
 - [ ] Fotos reales para la galería
 - [ ] Token de elTOQUE en Vercel para la tasa automática

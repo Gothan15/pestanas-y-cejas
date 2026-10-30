@@ -32,6 +32,21 @@ export const negocio = {
   },
   notaHero: "citas disponibles · pago en CUP al cambio del día",
 
+  // AGENDA — turnos que se ofrecen en la web y en el panel privado.
+  // ⚠️ PROVISIONAL: la dueña todavía no pasa su horario real; estos
+  // valores son un punto de partida razonable y se ajustan SOLO
+  // aquí cuando ella lo confirme. diasLaborales usa el formato de
+  // Date.getDay(): 0 = domingo, 1 = lunes, …, 6 = sábado.
+  // intervaloMin: duración de cada turno en minutos (el último
+  // turno empieza a la hora de cierre menos el intervalo).
+  agenda: {
+    diasLaborales: [1, 2, 3, 4, 5, 6], // lunes a sábado
+    apertura: "09:00",
+    cierre: "18:00",
+    intervaloMin: 60,
+    diasAnticipacion: 30, // hasta cuántos días vista se puede reservar
+  },
+
   // Contacto oficial
   whatsapp: "5363287239", // solo dígitos, con código de país (53 + 63287239)
   zona: "Por confirmar",
