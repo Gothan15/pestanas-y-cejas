@@ -19,7 +19,7 @@
 export type PrecioUSD = number | [number, number];
 
 export const negocio = {
-  nombre: "darianna_lash& Brown",
+  nombre: "Darianna Lash & Brow",
   rubro: "Cejas y pestañas",
   slogan: "Cejas y pestañas hechas con calma, a tu medida",
   descripcion:
