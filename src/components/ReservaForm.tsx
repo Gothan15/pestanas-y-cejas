@@ -1,14 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { negocio } from "@/config/negocio";
 import { enlaceWhatsApp, mensajeReserva, whatsappConfigurado } from "@/lib/whatsapp";
+import { esDiaLaboral, generarHoras, hoyISO, sumarDias } from "@/lib/agenda";
 import { EVENTO_SERVICIO } from "./Servicios";
 
 /**
  * Formulario de reserva con forma de ficha/vale en papel: campos con
  * solo línea inferior y botón de WhatsApp. Al enviar se abre wa.me
  * con el mensaje ya armado (ver src/lib/whatsapp.ts).
+ *
+ * Las horas ya no se escriben a mano: salen de la rejilla de turnos
+ * de la agenda (src/lib/agenda.ts) y las que la dueña marcó como
+ * ocupadas en su panel salen oscuras y no se pueden elegir.
  */
 export default function ReservaForm() {
   const [nombre, setNombre] = useState("");
@@ -16,6 +21,19 @@ export default function ReservaForm() {
   const [fecha, setFecha] = useState("");
   const [hora, setHora] = useState("");
   const [aviso, setAviso] = useState("");
+  const [ocupadas, setOcupadas] = useState<Set<string>>(new Set());
+  const [dispFallo, setDispFallo] = useState(false);
+  const [avisoFecha, setAvisoFecha] = useState("");
+  const [cargandoHoras, setCargandoHoras] = useState(false);
+  // «Hoy» se lee solo en el cliente, con useSyncExternalStore:
+  // leer la hora actual durante el render bloquea el prerender en
+  // Next 16 (blocking-prerender-current-time-client), un efecto
+  // con setState lo marca el lint, y en el servidor debe valer "".
+  const hoy = useSyncExternalStore(
+    () => () => {},
+    () => hoyISO(),
+    () => "",
+  );
 
   // Si la clienta tocó «Reservar» en un servicio, ese queda elegido aquí.
   useEffect(() => {
@@ -27,7 +45,59 @@ export default function ReservaForm() {
     return () => window.removeEventListener(EVENTO_SERVICIO, alSeleccionar);
   }, []);
 
+  // Al cambiar el día se limpian la hora y la disponibilidad
+  // anterior, y el efecto de abajo consulta los turnos ocupados.
+  // El atributo min no basta: el selector de fecha de iOS deja
+  // escoger días pasados, así que aquí un día anterior a hoy se
+  // corrige a hoy y se avisa.
+  const alCambiarFecha = (v: string) => {
+    let valor = v;
+    if (v && hoy && v < hoy) {
+      valor = hoy;
+      setAvisoFecha("Ese día ya pasó: te dejo en hoy, el primer día que puedes elegir.");
+    } else {
+      setAvisoFecha("");
+    }
+    setFecha(valor);
+    setHora("");
+    setOcupadas(new Set());
+    setDispFallo(false);
+    setCargandoHoras(valor !== "");
+  };
+
+  useEffect(() => {
+    if (!fecha) return;
+    let cancelado = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/disponibilidad?desde=${fecha}&hasta=${fecha}`);
+        if (!res.ok) throw new Error("sin disponibilidad");
+        const data = (await res.json()) as { ocupados: { hora: string }[] };
+        if (!cancelado) setOcupadas(new Set(data.ocupados.map((o) => o.hora)));
+      } catch {
+        // Sin disponibilidad comprobable: se ofrecen todos los
+        // turnos y la clienta confirma el suyo por WhatsApp.
+        if (!cancelado) setDispFallo(true);
+      } finally {
+        if (!cancelado) setCargandoHoras(false);
+      }
+    })();
+    return () => {
+      cancelado = true;
+    };
+  }, [fecha]);
+
   const servicio = negocio.servicios.find((s) => s.id === servicioId);
+  const maxFecha = hoy ? sumarDias(hoy, negocio.agenda.diasAnticipacion) : "";
+  const laboral = fecha ? esDiaLaboral(fecha) : false;
+  const horas = fecha && laboral ? generarHoras(fecha) : [];
+
+  const horaYaPaso = (h: string) => {
+    if (fecha !== hoy) return false;
+    const ahora = new Date();
+    const [hh, mm] = h.split(":").map(Number);
+    return hh * 60 + mm <= ahora.getHours() * 60 + ahora.getMinutes();
+  };
 
   const enviar = () => {
     if (!whatsappConfigurado()) {
@@ -81,12 +151,90 @@ export default function ReservaForm() {
         </label>
         <label className={claseEtiqueta}>
           Día que prefieres
-          <input type="date" className={claseCampo} value={fecha} onChange={(e) => setFecha(e.target.value)} />
+          <input
+            type="date"
+            className={claseCampo}
+            value={fecha}
+            min={hoy || undefined}
+            max={maxFecha || undefined}
+            onChange={(e) => alCambiarFecha(e.target.value)}
+          />
+          {avisoFecha ? (
+            <span className="mt-2 block text-xs font-semibold tracking-normal text-acento normal-case">
+              {avisoFecha}
+            </span>
+          ) : null}
         </label>
-        <label className={claseEtiqueta}>
+
+        <div className={claseEtiqueta}>
           Hora que prefieres
-          <input type="time" className={claseCampo} value={hora} onChange={(e) => setHora(e.target.value)} />
-        </label>
+          {fecha === "" ? (
+            <p className="mt-2 text-sm font-medium tracking-normal text-tinta/50 normal-case">
+              Elige primero el día y te enseñamos los turnos.
+            </p>
+          ) : !laboral ? (
+            <p className="mt-2 border border-acento/40 bg-crema px-3 py-2.5 text-sm font-medium tracking-normal text-tinta normal-case">
+              Ese día no se trabaja, elige otro día.
+            </p>
+          ) : (
+            <>
+              <div className="mt-2 grid grid-cols-3 gap-2">
+                {horas.map((h) => {
+                  const ocupada = ocupadas.has(h);
+                  const paso = horaYaPaso(h);
+                  if (ocupada) {
+                    return (
+                      <button
+                        key={h}
+                        type="button"
+                        disabled
+                        className="cursor-not-allowed bg-tinta px-1 py-2 text-center text-papel"
+                      >
+                        <span className="block text-sm font-bold line-through">{h}</span>
+                        <span className="block text-[10px] font-semibold tracking-wide text-dorado uppercase">
+                          Ocupado
+                        </span>
+                      </button>
+                    );
+                  }
+                  const elegida = hora === h;
+                  return (
+                    <button
+                      key={h}
+                      type="button"
+                      disabled={paso}
+                      onClick={() => setHora(h)}
+                      aria-pressed={elegida}
+                      className={`border-2 px-1 py-2 text-center transition disabled:cursor-not-allowed disabled:opacity-40 ${
+                        elegida
+                          ? "border-acento bg-acento text-papel"
+                          : "border-linea bg-transparent hover:border-acento"
+                      }`}
+                    >
+                      <span className="block text-sm font-bold">{h}</span>
+                      <span
+                        className={`block text-[10px] font-semibold tracking-wide uppercase ${
+                          elegida ? "text-papel/85" : "text-tinta/50"
+                        }`}
+                      >
+                        {paso ? "Ya pasó" : elegida ? "Elegida" : "Libre"}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              {cargandoHoras ? (
+                <p className="mt-2 text-xs font-medium tracking-normal text-tinta/50 normal-case">
+                  Comprobando los turnos ocupados…
+                </p>
+              ) : dispFallo ? (
+                <p className="mt-2 text-xs font-medium tracking-normal text-tinta/50 normal-case">
+                  No se pudo comprobar la disponibilidad: elige tu hora y confirma el turno por WhatsApp.
+                </p>
+              ) : null}
+            </>
+          )}
+        </div>
       </div>
 
       <div className="px-6 pb-6 sm:px-8 sm:pb-8">

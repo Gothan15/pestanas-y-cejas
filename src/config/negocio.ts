@@ -19,11 +19,11 @@
 export type PrecioUSD = number | [number, number];
 
 export const negocio = {
-  nombre: "Pestañas & Cejas",
+  nombre: "Darianna Lash & Brow",
   rubro: "Cejas y pestañas",
   slogan: "Cejas y pestañas hechas con calma, a tu medida",
   descripcion:
-    "Servicios de cejas y pestañas con cita previa. Eliges el servicio, escribes por WhatsApp y te confirmamos el turno en el mismo chat. Pago en CUP, al cambio del día.",
+    "Servicios de cejas y pestañas en casa, en Luyanó, con cita previa — y si ese día queda un turno libre, también te atiendo sin cita. Eliges el servicio, escribes por WhatsApp y te confirmamos el turno en el mismo chat. Pago en CUP, al cambio del día.",
 
   heroTitulo: {
     antes: "La mirada",
@@ -32,10 +32,26 @@ export const negocio = {
   },
   notaHero: "citas disponibles · pago en CUP al cambio del día",
 
+  // AGENDA — turnos que se ofrecen en la web y en el panel privado.
+  // Horario REAL confirmado por la dueña el 2026-10-31: lunes a
+  // sábado, de 9:00 a 17:00, y cada servicio dura 1 hora (por eso
+  // intervaloMin = 60 y el último turno empieza a las 16:00).
+  // diasLaborales usa el formato de Date.getDay(): 0 = domingo,
+  // 1 = lunes, …, 6 = sábado.
+  agenda: {
+    diasLaborales: [1, 2, 3, 4, 5, 6], // lunes a sábado
+    apertura: "09:00",
+    cierre: "17:00",
+    intervaloMin: 60,
+    diasAnticipacion: 30, // hasta cuántos días vista se puede reservar
+  },
+
   // Contacto oficial
   whatsapp: "5363287239", // solo dígitos, con código de país (53 + 63287239)
-  zona: "Por confirmar",
-  horario: "Citas disponibles · escríbenos por WhatsApp",
+  zona: "Luyanó, Diez de Octubre",
+  // Dirección exacta (atiende en casa), confirmada el 2026-10-31.
+  direccion: "Compromiso 154 altos, entre Reforma y Guasabacoa, Luyanó, Diez de Octubre",
+  horario: "Lunes a sábado · 9:00 a. m. – 5:00 p. m.",
 
   tema: {
     colores: {
@@ -73,64 +89,64 @@ export const negocio = {
     notaPago: "Pago en CUP al cambio del día (tasa de referencia de elTOQUE).",
   },
 
-  // Servicios OFICIALES, en USD. Duración: la dueña aún no la pasa,
-  // por eso va en "" y la página lo marca «por confirmar».
+  // Servicios OFICIALES, en USD. Duración confirmada por la dueña
+  // el 2026-10-31: todos los servicios duran 1 hora.
   servicios: [
     {
       id: "desmaquillar",
       nombre: "Desmaquillar",
       descripcion: "Retirada del maquillaje antes del servicio, para trabajar sobre la zona limpia.",
       precioUSD: 0.5 as PrecioUSD,
-      duracion: "",
+      duracion: "1 h",
     },
     {
       id: "pestanas-de-punto",
       nombre: "Pestañas de punto",
       descripcion: "Aplicación de pestañas de punto, un resultado bonito sin cargar la mirada.",
       precioUSD: 3 as PrecioUSD,
-      duracion: "",
+      duracion: "1 h",
     },
     {
       id: "retoque",
       nombre: "Retoque de pestañas",
       descripcion: "Retoque para mantenerlas completas y parejas. El precio varía según el estado (0.90–2 USD).",
       precioUSD: [0.9, 2] as PrecioUSD,
-      duracion: "",
+      duracion: "1 h",
     },
     {
       id: "retiro",
       nombre: "Retiro de pestañas",
       descripcion: "Retirada de las pestañas con cuidado, sin maltratar las tuyas.",
       precioUSD: 0.7 as PrecioUSD,
-      duracion: "",
+      duracion: "1 h",
     },
     {
       id: "depilacion-cejas",
       nombre: "Depilación de cejas",
       descripcion: "Limpieza y forma de la ceja para que se vea definida y natural.",
       precioUSD: 0.9 as PrecioUSD,
-      duracion: "",
+      duracion: "1 h",
     },
     {
       id: "tinte",
       nombre: "Tinte de cejas",
       descripcion: "Tinte para dar color y presencia a la ceja.",
       precioUSD: 0.7 as PrecioUSD,
-      duracion: "",
+      duracion: "1 h",
     },
     {
       id: "laminado",
       nombre: "Laminado de cejas",
       descripcion: "Laminado para que la ceja se vea peinada, llena y en su sitio.",
       precioUSD: 2 as PrecioUSD,
-      duracion: "",
+      duracion: "1 h",
     },
     {
       id: "cejas-4k",
       nombre: "Cejas 4K",
       descripcion: "El trabajo completo de cejas, con acabado definido de alta precisión.",
       precioUSD: 3 as PrecioUSD,
-      duracion: "",
+      duracion: "1 h",
     },
   ],
 
@@ -145,9 +161,19 @@ export const negocio = {
     },
     {
       titulo: "Te confirman el turno",
-      texto: "Te respondemos en el mismo chat y dejamos la cita cerrada. Sin cuentas ni contraseñas.",
+      texto: "Te respondemos en el mismo chat y dejamos la cita cerrada. El turno se guarda con una seña de la mitad del servicio.",
     },
   ],
+
+  // Políticas de la casa (confirmadas por la dueña el 2026-10-31):
+  // cita previa, con hueco para quien llegue sin cita si el día lo
+  // permite; seña de la mitad para guardar el turno.
+  politicas: {
+    citaPrevia: true,
+    sinCitaSiHayTurno: true,
+    sena: "Para guardar el turno se pide la mitad del precio del servicio.",
+    cancelacion: "Si cancelas, la seña se devuelve. Si cancelas el mismo día, se devuelve solo una parte.",
+  },
 
   frase: "Un turno a la vez, sin correr. Así se hace un trabajo que dura.",
   fraseAutor: "La forma de trabajar del estudio",

@@ -128,7 +128,7 @@ export default async function Home() {
               </figure>
               </div>
               <p className="font-display mt-20 rotate-[-3deg] text-lg text-acento italic sm:text-xl">
-                ✳ {negocio.notaHero}
+                <span className="text-dorado" aria-hidden>✦</span> {negocio.notaHero}
               </p>
             </div>
           </div>
@@ -262,6 +262,10 @@ export default async function Home() {
                 <div className="flex justify-between gap-6 border-t border-linea py-3">
                   <dt className="font-bold tracking-[0.14em] text-tinta/55 uppercase">Zona</dt>
                   <dd className="text-right font-semibold">{negocio.zona}</dd>
+                </div>
+                <div className="flex justify-between gap-6 border-t border-linea py-3">
+                  <dt className="font-bold tracking-[0.14em] text-tinta/55 uppercase">Dirección</dt>
+                  <dd className="text-right font-semibold">{negocio.direccion}</dd>
                 </div>
                 <div className="flex justify-between gap-6 border-t border-linea py-3">
                   <dt className="font-bold tracking-[0.14em] text-tinta/55 uppercase">Horario</dt>

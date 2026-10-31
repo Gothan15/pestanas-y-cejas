@@ -44,8 +44,8 @@ export default function Servicios({ tasa }: { tasa: TasaInfo }) {
               {s.duracion || "Duración por confirmar"}
             </p>
           </div>
-          <div className="col-start-2 flex items-baseline gap-4 sm:col-start-3 sm:flex-col sm:items-end sm:gap-1">
-            <span className="font-display text-xl whitespace-nowrap text-dorado sm:text-2xl">
+          <div className="col-start-2 flex flex-col items-start gap-1 sm:col-start-3 sm:items-end">
+            <span className="font-display text-lg text-dorado sm:text-2xl sm:whitespace-nowrap">
               {textoPrecio(s.precioUSD, tasa.tasa)}
             </span>
             <button

@@ -1,0 +1,27 @@
+// Pestañas & Cejas — base de datos mínima de la «versión ligera»
+// de la agenda: SOLO guarda los horarios que la dueña marca como
+// ocupados desde su panel privado (/panel). Las reservas en sí
+// siguen llegando por WhatsApp; aquí no hay datos de clientas.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Un turno bloqueado. fecha como cadena "YYYY-MM-DD" y hora como
+// "HH:MM": son días/horas locales del negocio, sin zonas horarias
+// de por medio, para que nunca se corra el día al convertir.
+model HorarioOcupado {
+  id       String   @id @default(cuid())
+  fecha    String // YYYY-MM-DD
+  hora     String // HH:MM
+  nota     String? // texto libre de la dueña (ej. nombre de la clienta)
+  creadoEn DateTime @default(now())
+
+  @@unique([fecha, hora])
+}
