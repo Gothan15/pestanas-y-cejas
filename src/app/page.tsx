@@ -264,6 +264,10 @@ export default async function Home() {
                   <dd className="text-right font-semibold">{negocio.zona}</dd>
                 </div>
                 <div className="flex justify-between gap-6 border-t border-linea py-3">
+                  <dt className="font-bold tracking-[0.14em] text-tinta/55 uppercase">Dirección</dt>
+                  <dd className="text-right font-semibold">{negocio.direccion}</dd>
+                </div>
+                <div className="flex justify-between gap-6 border-t border-linea py-3">
                   <dt className="font-bold tracking-[0.14em] text-tinta/55 uppercase">Horario</dt>
                   <dd className="text-right font-semibold">{negocio.horario}</dd>
                 </div>

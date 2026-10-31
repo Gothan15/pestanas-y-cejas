@@ -21,13 +21,15 @@ export default function PanelPage() {
   const [clave, setClave] = useState("");
   const [errorLogin, setErrorLogin] = useState("");
   const [bloqueos, setBloqueos] = useState<Bloqueo[]>([]);
-  const [fecha, setFecha] = useState(hoyISO());
+  const [fecha, setFecha] = useState("");
   const [nota, setNota] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [guardando, setGuardando] = useState(false);
 
-  const hoy = hoyISO();
-  const maxFecha = sumarDias(hoy, 90);
+  // «Hoy» se lee al montar, en el navegador: leer la hora actual
+  // durante el render bloquea el prerender en Next 16.
+  const [hoy, setHoy] = useState("");
+  const maxFecha = hoy ? sumarDias(hoy, 90) : "";
 
   const cargarBloqueos = useCallback(async () => {
     const res = await fetch("/api/panel/bloqueos");
@@ -42,6 +44,9 @@ export default function PanelPage() {
   }, []);
 
   useEffect(() => {
+    const h = hoyISO();
+    setHoy(h);
+    setFecha(h);
     (async () => {
       const res = await fetch("/api/panel/estado");
       const data = (await res.json().catch(() => ({ autenticada: false }))) as {
@@ -177,8 +182,8 @@ export default function PanelPage() {
                     type="date"
                     className={claseInput}
                     value={fecha}
-                    min={hoy}
-                    max={maxFecha}
+                    min={hoy || undefined}
+                    max={maxFecha || undefined}
                     onChange={(e) => setFecha(e.target.value || hoy)}
                   />
                 </label>

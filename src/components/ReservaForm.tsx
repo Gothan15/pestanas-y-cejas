@@ -24,6 +24,13 @@ export default function ReservaForm() {
   const [ocupadas, setOcupadas] = useState<Set<string>>(new Set());
   const [dispFallo, setDispFallo] = useState(false);
   const [cargandoHoras, setCargandoHoras] = useState(false);
+  // «Hoy» se lee al montar, en el navegador: leer la hora actual
+  // durante el render bloquea el prerender en Next 16
+  // (blocking-prerender-current-time-client).
+  const [hoy, setHoy] = useState("");
+  useEffect(() => {
+    setHoy(hoyISO());
+  }, []);
 
   // Si la clienta tocó «Reservar» en un servicio, ese queda elegido aquí.
   useEffect(() => {
@@ -68,8 +75,7 @@ export default function ReservaForm() {
   }, [fecha]);
 
   const servicio = negocio.servicios.find((s) => s.id === servicioId);
-  const hoy = hoyISO();
-  const maxFecha = sumarDias(hoy, negocio.agenda.diasAnticipacion);
+  const maxFecha = hoy ? sumarDias(hoy, negocio.agenda.diasAnticipacion) : "";
   const laboral = fecha ? esDiaLaboral(fecha) : false;
   const horas = fecha && laboral ? generarHoras(fecha) : [];
 
@@ -136,8 +142,8 @@ export default function ReservaForm() {
             type="date"
             className={claseCampo}
             value={fecha}
-            min={hoy}
-            max={maxFecha}
+            min={hoy || undefined}
+            max={maxFecha || undefined}
             onChange={(e) => alCambiarFecha(e.target.value)}
           />
         </label>
