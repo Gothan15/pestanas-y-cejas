@@ -274,7 +274,7 @@ export default async function Home() {
                 <div className="flex justify-between gap-6 border-t border-b border-linea py-3">
                   <dt className="font-bold tracking-[0.14em] text-tinta/55 uppercase">WhatsApp</dt>
                   <dd className="text-right font-semibold">
-                    {whatsappConfigurado() ? "63 28 72 39" : "Por confirmar"}
+                    {whatsappConfigurado() ? "+53 63 28 72 39" : "Por confirmar"}
                   </dd>
                 </div>
               </dl>
@@ -328,14 +328,6 @@ export default async function Home() {
         </div>
       </footer>
 
-      {/* Botón fijo de reserva en móvil */}
-      <a
-        href="#reservar"
-        className="fixed bottom-4 left-1/2 z-40 -translate-x-1/2 rounded-full border border-papel/40 bg-tinta px-7 py-3 font-bold whitespace-nowrap text-papel shadow-[0_10px_30px_rgba(33,24,18,0.35)] sm:hidden"
-      >
-        Reservar cita
-      </a>
-      <div className="h-16 sm:hidden" aria-hidden />
     </main>
   );
 }
