@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { negocio } from "@/config/negocio";
 import { esDiaLaboral, fechaBonita, generarHoras, hoyISO, sumarDias } from "@/lib/agenda";
 
@@ -26,10 +26,18 @@ export default function PanelPage() {
   const [mensaje, setMensaje] = useState("");
   const [guardando, setGuardando] = useState(false);
 
-  // «Hoy» se lee al montar, en el navegador: leer la hora actual
-  // durante el render bloquea el prerender en Next 16.
-  const [hoy, setHoy] = useState("");
+  // «Hoy» se lee solo en el cliente, con useSyncExternalStore:
+  // leer la hora actual durante el render bloquea el prerender
+  // en Next 16 y un efecto con setState lo marca el lint; en el
+  // servidor vale "". El día seleccionado arranca en hoy: mientras
+  // la dueña no toque el selector, `fecha` queda "" y se usa hoy.
+  const hoy = useSyncExternalStore(
+    () => () => {},
+    () => hoyISO(),
+    () => "",
+  );
   const maxFecha = hoy ? sumarDias(hoy, 90) : "";
+  const fechaSel = fecha || hoy;
 
   const cargarBloqueos = useCallback(async () => {
     const res = await fetch("/api/panel/bloqueos");
@@ -44,9 +52,6 @@ export default function PanelPage() {
   }, []);
 
   useEffect(() => {
-    const h = hoyISO();
-    setHoy(h);
-    setFecha(h);
     (async () => {
       const res = await fetch("/api/panel/estado");
       const data = (await res.json().catch(() => ({ autenticada: false }))) as {
@@ -81,15 +86,15 @@ export default function PanelPage() {
   };
 
   const ocupadosDelDia = useMemo(
-    () => new Map(bloqueos.filter((b) => b.fecha === fecha).map((b) => [b.hora, b])),
-    [bloqueos, fecha],
+    () => new Map(bloqueos.filter((b) => b.fecha === fechaSel).map((b) => [b.hora, b])),
+    [bloqueos, fechaSel],
   );
-  const horas = useMemo(() => generarHoras(fecha), [fecha]);
-  const laboral = esDiaLaboral(fecha);
+  const horas = useMemo(() => generarHoras(fechaSel), [fechaSel]);
+  const laboral = esDiaLaboral(fechaSel);
 
   // Horas de hoy que ya pasaron: no se ofrecen ni se pueden tocar.
   const horaYaPaso = (hora: string) => {
-    if (fecha !== hoy) return false;
+    if (fechaSel !== hoy) return false;
     const ahora = new Date();
     const [h, m] = hora.split(":").map(Number);
     return h * 60 + m <= ahora.getHours() * 60 + ahora.getMinutes();
@@ -109,7 +114,7 @@ export default function PanelPage() {
       const res = await fetch("/api/panel/bloqueos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fecha, hora, nota: nota.trim() || undefined }),
+        body: JSON.stringify({ fecha: fechaSel, hora, nota: nota.trim() || undefined }),
       });
       if (res.ok) {
         setMensaje(`Turno de las ${hora} marcado como ocupado. Ya no se ofrece en la página.`);
@@ -181,7 +186,7 @@ export default function PanelPage() {
                   <input
                     type="date"
                     className={claseInput}
-                    value={fecha}
+                    value={fechaSel}
                     min={hoy || undefined}
                     max={maxFecha || undefined}
                     onChange={(e) => setFecha(e.target.value || hoy)}
@@ -198,7 +203,7 @@ export default function PanelPage() {
                   />
                 </label>
               </div>
-              <p className="font-display mt-5 text-lg capitalize">{fechaBonita(fecha)}</p>
+              <p className="font-display mt-5 text-lg capitalize">{fechaBonita(fechaSel)}</p>
 
               {!laboral ? (
                 <p className="mt-4 border border-linea bg-crema px-4 py-3 text-sm leading-6">

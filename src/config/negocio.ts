@@ -161,7 +161,7 @@ export const negocio = {
     },
     {
       titulo: "Te confirman el turno",
-      texto: "Te respondemos en el mismo chat y dejamos la cita cerrada. El turno se guarda con una seña de la mitad del servicio. Sin cuentas ni contraseñas.",
+      texto: "Te respondemos en el mismo chat y dejamos la cita cerrada. El turno se guarda con una seña de la mitad del servicio.",
     },
   ],
 

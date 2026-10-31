@@ -24,12 +24,16 @@
 
 html {
   scroll-behavior: smooth;
+  /* Red de seguridad: ningún elemento suelto puede ensanchar
+     la página en el móvil (pasó con el precio en rango del retoque). */
+  overflow-x: clip;
 }
 
 body {
   background: var(--papel);
   color: var(--tinta);
   font-family: var(--font-sans), system-ui, sans-serif;
+  overflow-x: clip;
 }
 
 .font-display {

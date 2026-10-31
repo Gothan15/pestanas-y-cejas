@@ -128,7 +128,7 @@ export default async function Home() {
               </figure>
               </div>
               <p className="font-display mt-20 rotate-[-3deg] text-lg text-acento italic sm:text-xl">
-                ✳ {negocio.notaHero}
+                <span className="text-dorado" aria-hidden>✦</span> {negocio.notaHero}
               </p>
             </div>
           </div>

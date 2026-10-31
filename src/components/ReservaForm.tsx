@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { negocio } from "@/config/negocio";
 import { enlaceWhatsApp, mensajeReserva, whatsappConfigurado } from "@/lib/whatsapp";
 import { esDiaLaboral, generarHoras, hoyISO, sumarDias } from "@/lib/agenda";
@@ -23,14 +23,17 @@ export default function ReservaForm() {
   const [aviso, setAviso] = useState("");
   const [ocupadas, setOcupadas] = useState<Set<string>>(new Set());
   const [dispFallo, setDispFallo] = useState(false);
+  const [avisoFecha, setAvisoFecha] = useState("");
   const [cargandoHoras, setCargandoHoras] = useState(false);
-  // «Hoy» se lee al montar, en el navegador: leer la hora actual
-  // durante el render bloquea el prerender en Next 16
-  // (blocking-prerender-current-time-client).
-  const [hoy, setHoy] = useState("");
-  useEffect(() => {
-    setHoy(hoyISO());
-  }, []);
+  // «Hoy» se lee solo en el cliente, con useSyncExternalStore:
+  // leer la hora actual durante el render bloquea el prerender en
+  // Next 16 (blocking-prerender-current-time-client), un efecto
+  // con setState lo marca el lint, y en el servidor debe valer "".
+  const hoy = useSyncExternalStore(
+    () => () => {},
+    () => hoyISO(),
+    () => "",
+  );
 
   // Si la clienta tocó «Reservar» en un servicio, ese queda elegido aquí.
   useEffect(() => {
@@ -44,12 +47,22 @@ export default function ReservaForm() {
 
   // Al cambiar el día se limpian la hora y la disponibilidad
   // anterior, y el efecto de abajo consulta los turnos ocupados.
+  // El atributo min no basta: el selector de fecha de iOS deja
+  // escoger días pasados, así que aquí un día anterior a hoy se
+  // corrige a hoy y se avisa.
   const alCambiarFecha = (v: string) => {
-    setFecha(v);
+    let valor = v;
+    if (v && hoy && v < hoy) {
+      valor = hoy;
+      setAvisoFecha("Ese día ya pasó: te dejo en hoy, el primer día que puedes elegir.");
+    } else {
+      setAvisoFecha("");
+    }
+    setFecha(valor);
     setHora("");
     setOcupadas(new Set());
     setDispFallo(false);
-    setCargandoHoras(v !== "");
+    setCargandoHoras(valor !== "");
   };
 
   useEffect(() => {
@@ -146,6 +159,11 @@ export default function ReservaForm() {
             max={maxFecha || undefined}
             onChange={(e) => alCambiarFecha(e.target.value)}
           />
+          {avisoFecha ? (
+            <span className="mt-2 block text-xs font-semibold tracking-normal text-acento normal-case">
+              {avisoFecha}
+            </span>
+          ) : null}
         </label>
 
         <div className={claseEtiqueta}>
