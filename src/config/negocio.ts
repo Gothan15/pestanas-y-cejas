@@ -157,7 +157,7 @@ export const negocio = {
     },
     {
       titulo: "Escribe por WhatsApp",
-      texto: "El formulario arma el mensaje por ti: servicio, día y hora. Solo tienes que darle enviar al 63 28 72 39.",
+      texto: "El formulario arma el mensaje por ti: servicio, día y hora. Solo tienes que darle enviar al +53 63 28 72 39.",
     },
     {
       titulo: "Te confirman el turno",
@@ -180,7 +180,7 @@ export const negocio = {
 
   galeria: [
     { src: "", alt: "Trabajo de cejas", pie: "Diseño de cejas", formato: "vertical" as const },
-    { src: "", alt: "Trabajo de pestañas", pie: "Pestañas de punto", formato: "horizontal" as const },
+    { src: "/fotos/pestanas.jpg", alt: "Trabajo de pestañas", pie: "Pestañas de punto", formato: "horizontal" as const },
     { src: "", alt: "Combo de cejas y pestañas", pie: "Combo completo", formato: "vertical" as const },
     { src: "", alt: "Detalle de un trabajo", pie: "Detalle", formato: "horizontal" as const },
   ],
